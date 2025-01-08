@@ -4,7 +4,7 @@ import java.util.HashMap;
 
 public class LongestSubstringKDistinct {
     public static int lengthOfLongestSubstringKDistinct(String s, int k) {
-        if (s == null || s.length() == 0 || k == 0) {
+        if (s == null || s.isEmpty() || k == 0) {
             return 0;
         }
 
