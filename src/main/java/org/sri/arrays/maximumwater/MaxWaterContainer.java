@@ -5,6 +5,10 @@ public class MaxWaterContainer {
         int left = 0, right = height.length - 1;
         int maxArea = 0;
 
+        if (height == null || height.length < 2) {
+            return 0;
+        }
+
         while (left < right) {
             // Calculate area
             int area = Math.min(height[left], height[right]) * (right - left);
