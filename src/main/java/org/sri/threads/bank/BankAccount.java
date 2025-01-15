@@ -1,4 +1,4 @@
-package org.sri.threads;
+package org.sri.threads.bank;
 
 public class BankAccount {
     private int balance;

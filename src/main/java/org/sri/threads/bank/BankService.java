@@ -1,4 +1,4 @@
-package org.sri.threads;
+package org.sri.threads.bank;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
