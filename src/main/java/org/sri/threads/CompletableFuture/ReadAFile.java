@@ -1,0 +1,37 @@
+package org.sri.threads.CompletableFuture;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+public class ReadAFile {
+    public static void main(String[] args) {
+        readAFile();
+    }
+
+    private static void readAFile() {
+        ExecutorService executorService = Executors.newFixedThreadPool(5);
+        try {
+
+            CompletableFuture<String> completableFuture = CompletableFuture.supplyAsync(() -> {
+                        //read a file
+                        try {
+                            return new String(Files.readAllBytes(Paths.get("/home/sri/DSA/DSA/src/test/sample3.txt")));
+                        } catch (IOException e) {
+                            throw new RuntimeException("Error reading file", e);
+                        }
+                    }, executorService)
+                    .thenApplyAsync(result -> result.replace('s', 'w'))
+                    .exceptionally(ex -> {
+                        System.out.println("exception with file, maybe missing");
+                        return "default string to process";
+                    });
+            System.out.println(completableFuture.join());
+        } finally {
+            executorService.shutdown();
+        }
+    }
+}
