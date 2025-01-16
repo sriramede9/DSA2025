@@ -1,18 +1,51 @@
 package org.sri.threads.CompletableFuture;
 
+import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class ReadAFile {
     public static void main(String[] args) {
-        readAFile();
+//        readAFile();
+        readMultipleFiles();
     }
 
+
+    private static void readMultipleFiles() {
+        String[] multipleFiles = new String[]{"/home/sri/DSA/DSA/src/test/sample.txt", "/home/sri/DSA/DSA/src/test/sample2.txt"};
+        ExecutorService executorService = Executors.newFixedThreadPool(2);
+
+        try {
+            Arrays.stream(multipleFiles).map(f -> {
+                return CompletableFuture.supplyAsync(() -> {
+
+                            try {
+                                return new String(Files.readAllBytes(Paths.get(f)));
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }).thenApplyAsync(result -> result.replace('s', 'W'))
+                        .exceptionally(ex -> {
+                            System.out.println("exception reading a file");
+                            return "default response";
+                        }).join();
+            }).forEach(System.out::println);
+
+        } finally {
+            executorService.shutdown();
+        }
+    }
+
+
     private static void readAFile() {
+
         ExecutorService executorService = Executors.newFixedThreadPool(5);
         try {
 
