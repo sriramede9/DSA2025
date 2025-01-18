@@ -21,22 +21,25 @@ public class ReadAFile {
         ExecutorService executorService = Executors.newFixedThreadPool(2);
 
         try {
-            Arrays.stream(multipleFiles).map(f -> {
-                return CompletableFuture.supplyAsync(() -> {
+            Arrays.stream(multipleFiles).map(file -> {
+                CompletableFuture<String> stringCompletableFuture = CompletableFuture.supplyAsync(() -> {
 
-                            try {
-                                return new String(Files.readAllBytes(Paths.get(f)));
-                            } catch (IOException e) {
-                                throw new RuntimeException(e);
-                            }
-                        }).thenApplyAsync(result -> result.replace('s', 'W'))
-                        .exceptionally(ex -> {
-                            System.out.println("exception reading a file");
-                            return "default response";
-                        }).join();
+                    try {
+                        return new String(Files.readAllBytes(Paths.get(file)));
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+                stringCompletableFuture.thenApplyAsync(result -> result.replace('s', 'W'));
+                stringCompletableFuture.exceptionally(ex -> {
+                    System.out.println("exception reading a file");
+                    return "default response";
+                });
+                return stringCompletableFuture.join();
             }).forEach(System.out::println);
 
         } finally {
+
             executorService.shutdown();
         }
     }
