@@ -1,0 +1,20 @@
+Employees Table
+employee_id	  first_name	last_name	department_id	salary
+     1	            John	  Doe	        1	        60000
+     2	            Jane	  Smith	        1	        70000
+     3	            Alice	  Johnson	    2	        55000
+     4	            Bob	      Brown	        2	        45000
+
+Departments Table
+department_id	department_name
+        1	       IT
+        2          HR
+
+1) Get the employees with maximum salaries
+
+select first_name,last_name,salary from employees where salary = (select max(salary) from employees );
+
+2) Get the employess with maximum salaries for each department
+
+select e.first_name,e.last_name,e.salary,d.department_name from employees e join departments d on e.department_id =d.department_id where e.salary = (select max(salary) from employees where department_id=d.department_id);
+
