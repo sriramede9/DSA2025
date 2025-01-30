@@ -12,7 +12,6 @@ This document provides a comparison of different `Map` implementations in Java: 
 | **Modifiability**           | Can be modified (entries can be added/removed). | Immutable; entries cannot be modified.       | Immutable; entries cannot be modified.       | Modifiable (entries can be added/removed), but thread-safe. |
 | **Use Case**                | General-purpose map for key-value storage. | Useful when you need a map that cannot be modified after creation. | Quick creation of small, immutable maps.     | Used in multi-threaded environments where thread safety is required. |
 | **Performance Consideration** | Good performance for single-threaded scenarios. | Depends on the underlying map but is generally slower due to immutability. | Designed for small maps, not intended for large-scale use. | Optimized for high-concurrency environments with minimal locking. |
-| **Iteration**               | Not thread-safe during iteration.         | **Not thread-safe** during iteration (synchronization needed). | Iteration is thread-safe (since the map is immutable). | Iteration is thread-safe, does not block other threads. |
 | **Atomic Operations**       | No built-in support for atomic operations. | No built-in support for atomic operations.    | No built-in support for atomic operations.   | Supports atomic operations like `putIfAbsent()`, `remove()`, and `replace()`. |
 | **Common Use Case**         | Applications that require key-value pairs with frequent modifications. | Making a map immutable and preventing any further changes. | Creating small, fixed maps for quick use.    | Applications with heavy concurrent access, such as caching or counters. |
 
@@ -60,7 +59,6 @@ This README explains the differences between various Java `Map` implementations 
 | **Thread Safety**          | Not thread-safe for iteration; external synchronization is required. | Thread-safe for iteration due to immutability. | Thread-safe for both modifications and iteration. |
 | **Modification Risk**      | Changes in the original map reflect in the unmodifiable map. | No risk; the map is immutable. | No risk of unsynchronized access; all operations are synchronized. |
 | **Concurrency Mechanism**  | None. Unmodifiable, but not synchronized.              | None. Immutability eliminates concurrency issues. | Synchronizes all method calls using intrinsic locks. |
-| **Iteration Safety**       | Not inherently safe; requires manual synchronization. | Safe because the map cannot be modified.   | Safe because iteration and modification operations are synchronized. |
 | **Performance**            | Depends on the underlying map; incurs no synchronization overhead. | Optimized for immutability; compact and fast for read operations. | Slower in multithreaded environments due to synchronized access. |
 | **Use Case**               | Prevent accidental modifications in single-threaded contexts. | Ideal for creating read-only maps with no modification needs. | Suitable for multithreaded environments needing synchronized access. |
 
@@ -153,3 +151,42 @@ This README explains the differences between various Java `Map` implementations 
 | Need high performance in a multithreaded context. | Consider using `ConcurrentHashMap`.       |
 
 ---
+# Thread Safety in Java Maps: When to Synchronize During Iteration
+
+## Overview
+When working with maps in a multithreaded environment, it’s essential to understand which implementations are inherently thread-safe and which require additional synchronization to avoid `ConcurrentModificationException`.
+
+## Table: Synchronization Requirements for Different Map Implementations
+
+| **Collection Type** | **Thread-Safe for Iteration?** | **Needs Manual Synchronization?** | **Reason** |
+|----------------------|----------------------|----------------------|----------------------|
+| `Collections.synchronizedMap(new HashMap<>())` | 🚨 No | ✅ Yes | Basic operations (put, get, remove) are synchronized, but iteration is **not thread-safe** unless manually synchronized. |
+| `ConcurrentHashMap` | ✅ Yes | ❌ No | Uses a segmented locking mechanism, so multiple threads can iterate and modify safely. |
+| `Map.ofEntries(...)` (Immutable Map) | ✅ Yes | ❌ No | It’s **read-only**, so there’s no modification during iteration. No synchronization needed. |
+| `Collections.unmodifiableMap(map)` | 🚨 No | ✅ Yes | The structure is fixed, but iteration is still **not inherently thread-safe** because the underlying map could be modified externally. |
+| `HashMap` | 🚨 No | ✅ Yes | Not thread-safe at all. |
+| `Hashtable` | ✅ Yes | ❌ No | Fully synchronized but **slow** compared to `ConcurrentHashMap`. |
+
+## Best Practices
+- **Use `ConcurrentHashMap` whenever possible** for a fully thread-safe and high-performance solution.
+- **Use `Map.ofEntries(...)` for immutable maps** where no modifications are expected.
+- **Wrap with `Collections.synchronizedMap()` if needed, but always synchronize manually during iteration**.
+- **Avoid `Hashtable` unless working with legacy code**, as it is slower than `ConcurrentHashMap`.
+
+## Example: Proper Synchronization with `synchronizedMap`
+```java
+Map<String, String> syncMap = Collections.synchronizedMap(new HashMap<>());
+
+synchronized (syncMap) { // Manual synchronization required for iteration
+    for (Map.Entry<String, String> entry : syncMap.entrySet()) {
+        System.out.println(entry.getKey() + " -> " + entry.getValue());
+    }
+}
+```
+
+## Summary
+- **No need to synchronize iteration** for ✅ `ConcurrentHashMap` and `Map.ofEntries(...)`
+- **Everything else needs manual synchronization** if iterating while other threads may modify the map.
+
+Understanding these differences ensures that you avoid unexpected `ConcurrentModificationException` and achieve safe, efficient multithreading in Java.
+
