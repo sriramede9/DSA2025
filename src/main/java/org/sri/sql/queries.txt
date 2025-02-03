@@ -18,3 +18,11 @@ select first_name,last_name,salary from employees where salary = (select max(sal
 
 select e.first_name,e.last_name,e.salary,d.department_name from employees e join departments d on e.department_id =d.department_id where e.salary = (select max(salary) from employees where department_id=d.department_id);
 
+3) Find second highest salary employee
+
+SELECT name, salary
+FROM (
+    SELECT name, salary, DENSE_RANK() OVER (ORDER BY salary DESC) AS rnk
+    FROM employees
+) ranked
+WHERE rnk = 2;
