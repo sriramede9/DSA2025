@@ -31,4 +31,110 @@ WHERE rnk = 2;
 
 select e.first_name,e.salary,d.department_name from employees e join departments d on e.department_id=d.department_id where e.salary> (select  avg(salary) from employees where department_id=d.department_id);
 
+Here are the **6 SQL questions** along with their **queries and explanations** for your notes. 📖🚀
+
+---
+
+### **1️⃣ Find Employees in the Finance Department Earning More Than $70,000**
+#### **Query:**
+```sql
+SELECT e.salary, d.department_name
+FROM employees e
+JOIN departments d ON e.department_id = d.department_id
+WHERE e.salary > 70000 AND d.department_name = 'Finance';
+```
+#### **Explanation:**
+- Joins `employees` and `departments` tables using `department_id`.
+- Filters employees **only in the Finance department** (`d.department_name = 'Finance'`).
+- Retrieves employees **who earn more than 70,000**.
+
+---
+
+### **2️⃣ Find Departments Where the Average Salary is Greater Than $50,000**
+#### **Query:**
+```sql
+SELECT d.department_name, AVG(e.salary) AS avg_salary
+FROM employees e
+JOIN departments d ON e.department_id = d.department_id
+GROUP BY d.department_name
+HAVING AVG(e.salary) > 50000;
+```
+#### **Explanation:**
+- Joins `employees` with `departments`.
+- Uses `GROUP BY` to **calculate average salary per department**.
+- `HAVING` ensures **only departments where avg salary > 50,000** are included.
+
+---
+
+### **3️⃣ Retrieve All Employees and Departments (Including Unmatched Records)**
+#### **Query:**
+```sql
+SELECT e.first_name, e.last_name, d.department_name
+FROM employees e
+FULL JOIN departments d ON e.department_id = d.department_id;
+```
+#### **Explanation:**
+- **FULL JOIN** returns:
+  - Employees **even if they have no department**.
+  - Departments **even if they have no employees**.
+
+---
+
+### **4️⃣ Find the 3rd Highest Salary Using `DENSE_RANK()`**
+#### **Query:**
+```sql
+SELECT first_name, salary
+FROM (
+    SELECT first_name, salary,
+           DENSE_RANK() OVER (ORDER BY salary DESC) AS rnk
+    FROM employees
+) ranked
+WHERE rnk = 3;
+```
+#### **Explanation:**
+- **`DENSE_RANK()`** ranks salaries without skipping numbers.
+- The outer query filters for employees **with rank = 3 (third highest salary)**.
+
+---
+
+### **5️⃣ Find Employees Who Earn More Than Their Department's Average Salary**
+#### **Query:**
+```sql
+SELECT e.first_name
+FROM employees e
+WHERE salary > (
+    SELECT AVG(salary)
+    FROM employees
+    WHERE department_id = e.department_id
+);
+```
+#### **Explanation:**
+- **Subquery calculates average salary** for each department.
+- Main query **compares each employee's salary** to their department's avg.
+- Returns **employees earning above the average** in their department.
+
+---
+
+### **6️⃣ Find Top 2 Highest Paid Employees in Each Department**
+#### **Query:**
+```sql
+SELECT first_name
+FROM (
+    SELECT first_name, last_name, salary,
+           DENSE_RANK() OVER (PARTITION BY department_id ORDER BY salary DESC) AS rnk
+    FROM employees
+) ranked
+WHERE rnk <= 2;
+```
+#### **Explanation:**
+- **`PARTITION BY department_id`** ranks salaries within each department.
+- **`ORDER BY salary DESC`** ranks highest salaries first.
+- **Filters for top 2 salaries in each department**.
+
+## **📌 Summary of Concepts Covered**
+✅ **Joins:** INNER, LEFT, FULL
+✅ **Aggregations:** `AVG()`, `GROUP BY`, `HAVING`
+✅ **Subqueries:** Used for filtering by calculated values
+✅ **Ranking Functions:** `DENSE_RANK()`
+
 
